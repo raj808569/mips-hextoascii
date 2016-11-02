@@ -3,9 +3,7 @@
 .data
 
 user_prompt:
-		.asciiz "\n please enter the 32 bit hexadecimal number without the 0x and enter the alphabets A,B,C,D,E,F in uppercase\n" 		 # ask the user for 
-
-the 32 bit hexadecimal input
+		.asciiz "\n please enter the 32 bit hexadecimal(8 digits) number without the 0x and enter the alphabets A,B,C,D,E,F in uppercase\n" 		 # ask the user for the 32 bit hexadecimal input
 
 get_input:
 		.word 4			 				#creating space for our 32bit input
@@ -25,7 +23,8 @@ main:
 
 	la $t0,get_input			#to calculate the ascii of input string
 	li $t4,9
-	li $t5,10
+	li $t5,16
+	li $t6,8
 	jal loop
 	
 	li $v0,10 				#syscall to terminate the program
@@ -33,24 +32,26 @@ main:
 
 loop:
 	lb $t1, 0($t0)			 # load the next character into t1
-	beqz $t1, exit			# Branches to "exit" at the null character.
+	beqz $t6, exit			# Branches to "exit" at the null character.
 
 	addi $t2,$t1,-48			#converts first charcter of the pair to equivalent decimal		
 	bgt $t2,$t4,hex			#for conversion of A,B,C,D,E,F
 
 loop2:
 	addi $t0, $t0, 1 			#increment character
+	addi $t6,$t6,-1			#decrement counter
 	lb $t1,0($t0)			#for conversion of second character of pair 
 	addi $t3,$t1,-48
 	bgt $t3,$t4,hex2
 
 loop3:
-	mul $t2,$t2,$t5
+	mul $t2,$t2,$t5			#multiply first by 16 and add second to get the decimal equivalent
 	add $t2,$t2,$t3
 	move $a0,$t2
-	li $v0,1
+	li $v0,11
 	syscall
 	addi $t0,$t0,1
+	addi $t6,$t6,-1
 	j loop
 hex:
 	
